@@ -75,6 +75,7 @@ const Agent = ({ userName, userId, type }: AgentProps ) => {
                 userid: userId,
             }
         })
+
     }
 
     const handleDisconnect = async () => {
