@@ -22,7 +22,7 @@ interface SavedMessage {
 const Agent = ({ userName, userId, type }: AgentProps ) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [ callStatus, setCallStatus ] = useState<CallStatus>(CallStatus.INACTIVE);
+    const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [messages, setMessages] = useState<SavedMessage[]>([]);
 
     useEffect(() => {
@@ -68,15 +68,34 @@ const Agent = ({ userName, userId, type }: AgentProps ) => {
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-            variableValues: {
-                username: userName,
-                userid: userId,
+        if (type === "generate") {
+            await vapi.start(
+                undefined,
+                undefined,
+                undefined,
+                process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
+                {
+                    variableValues: {
+                        username: userName,
+                        userid: userId,
+                    },
+                }
+            );
+        } else {
+            let formattedQuestions = "";
+            if (questions) {
+                formattedQuestions = questions
+                    .map((question) => `- ${question}`)
+                    .join("\n");
             }
-        })
 
-    }
-
+            await vapi.start(interviewer, {
+                variableValues: {
+                    questions: formattedQuestions,
+                },
+            });
+        }
+    };
     const handleDisconnect = async () => {
         setCallStatus(CallStatus.INACTIVE);
 
