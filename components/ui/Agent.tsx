@@ -19,7 +19,7 @@ interface SavedMessage {
     content: string;
 }
 
-const Agent = ({ userName, userId, type }: AgentProps ) => {
+const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -68,34 +68,48 @@ const Agent = ({ userName, userId, type }: AgentProps ) => {
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        if (type === "generate") {
-            await vapi.start(
-                undefined,
-                undefined,
-                undefined,
-                process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
-                {
-                    variableValues: {
-                        username: userName,
-                        userid: userId,
-                    },
-                }
-            );
-        } else {
-            let formattedQuestions = "";
-            if (questions) {
-                formattedQuestions = questions
-                    .map((question) => `- ${question}`)
-                    .join("\n");
+        try {
+            const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID;
+            if (!workflowId) {
+                throw new Error("Missing VAPI Workflow ID");
             }
 
-            await vapi.start(interviewer, {
-                variableValues: {
-                    questions: formattedQuestions,
-                },
-            });
+            if (type === "generate") {
+                await vapi.start(
+                    undefined,
+                    undefined,
+                    undefined,
+                    workflowId,
+                    {
+                        variableValues: {
+                            username: userName,
+                            userid: userId,
+                        },
+                    }
+                );
+            } else {
+                let formattedQuestions = "";
+                if (questions) {
+                    formattedQuestions = questions
+                        .map((question) => `- ${question}`)
+                        .join("\n");
+                }
+
+                await vapi.start(interviewer, {
+                    variableValues: {
+                        questions: formattedQuestions,
+                    },
+                });
+            }
+        } catch (err) {
+            console.error("Error during Vapi call start:", err);
+            setCallStatus(CallStatus.INACTIVE);
+
+            vapi.stop();
         }
     };
+
+
     const handleDisconnect = async () => {
         setCallStatus(CallStatus.INACTIVE);
 
