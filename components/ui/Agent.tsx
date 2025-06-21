@@ -97,7 +97,7 @@ const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
 
                 await vapi.start(interviewer, {
                     variableValues: {
-                        questions: formattedQuestions,
+                        questions: `Please ask the following questions **one at a time**, and wait for an answer before proceeding:\n${formattedQuestions}`
                     },
                 });
             }
