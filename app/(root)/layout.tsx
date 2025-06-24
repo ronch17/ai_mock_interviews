@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import Link from "next/link";
-import {isAuthenticated} from "@/lib/auth.action";
+import {isAuthenticated} from "@/lib/actions/auth.action";
 import {redirect} from "next/navigation";
 
 

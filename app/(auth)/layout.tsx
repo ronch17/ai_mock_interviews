@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import {isAuthenticated} from "@/lib/auth.action";
+import {isAuthenticated} from "@/lib/actions/auth.action";
 import {redirect} from "next/navigation";
 
 const layout = async ({ children }: { children: ReactNode }) => {

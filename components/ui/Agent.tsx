@@ -6,6 +6,7 @@ import {cn} from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {vapi} from "@/lib/vapi.sdk";
 import {router} from "next/client";
+import {interviewer} from "@/public/constants";
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
@@ -19,7 +20,7 @@ interface SavedMessage {
     content: string;
 }
 
-const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
+const Agent = ({ userName, userId, type, questions, interviewId }: AgentProps ) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -61,7 +62,31 @@ const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
 
     }, [])
 
+    const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+        console.log('Generate feedback here.');
+
+        const {success, id } = {
+            success: true,
+            id: 'feedback-id'
+        }
+
+        if (success && id) {
+            router.push(`/interview/${interviewId}/feedback`);
+        } else {
+            console.log('Error saving feedback.')
+            router.push('/');
+        }
+    }
+
     useEffect(() => {
+        if (callStatus === CallStatus.FINISHED) {
+            if (type === 'generate') {
+                router.push('/')
+            } else {
+                handleGenerateFeedback(messages);
+            }
+        }
+
         if (callStatus === CallStatus.FINISHED) router.push('/');
     }, [messages, callStatus, type, userId]);
 
@@ -74,7 +99,7 @@ const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
                 throw new Error("Missing VAPI Workflow ID");
             }
 
-            if (type === "generate") {
+            if (type === 'generate') {
                 await vapi.start(
                     undefined,
                     undefined,
@@ -88,7 +113,7 @@ const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
                     }
                 );
             } else {
-                let formattedQuestions = "";
+                let formattedQuestions = '';
                 if (questions) {
                     formattedQuestions = questions
                         .map((question) => `- ${question}`)
@@ -97,7 +122,7 @@ const Agent = ({ userName, userId, type, questions }: AgentProps ) => {
 
                 await vapi.start(interviewer, {
                     variableValues: {
-                        questions: `Please ask the following questions **one at a time**, and wait for an answer before proceeding:\n${formattedQuestions}`
+                        questions: formattedQuestions,
                     },
                 });
             }
