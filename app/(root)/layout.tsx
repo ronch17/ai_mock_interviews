@@ -1,26 +1,33 @@
-import { ReactNode } from 'react'
+import { ReactNode } from "react";
 import Link from "next/link";
-import {isAuthenticated} from "@/lib/actions/auth.action";
-import {redirect} from "next/navigation";
+import { isAuthenticated } from "@/lib/actions/auth.action";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/actions/auth.action";
+import { LogoutButton } from "@/components/LogoutButton";
 
+const layout = async ({ children }: { children: ReactNode }) => {
+  const isUserAuthenticated = await isAuthenticated();
 
-const layout = async ({children}: {children: ReactNode}) => {
-    const isUserAuthenticated = await isAuthenticated();
+  if (!isUserAuthenticated) redirect("/sign-in");
 
-    if (!isUserAuthenticated) redirect('/sign-in');
+  const getUserName = await getCurrentUser();
 
   return (
     <div className="root-layout">
-      <nav>
-        <Link href="/" className="flex items-center gap-2" >
+      <nav className="flex flex-row justify-between">
+        <Link href="/" className="flex items-center gap-2">
           <img src="/logo.svg" alt="logo" width={38} height={32} />
           <h2 className="text-primary-100">PrepWise</h2>
         </Link>
+        <div className="flex flex-row gap-2">
+          <h3 className="capitalize">Welcome {getUserName.name} :)</h3>
+          <LogoutButton />
+        </div>
       </nav>
 
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default layout
+export default layout;
