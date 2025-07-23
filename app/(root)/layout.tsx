@@ -10,7 +10,8 @@ const layout = async ({ children }: { children: ReactNode }) => {
 
   if (!isUserAuthenticated) redirect("/sign-in");
 
-  const getUserName = await getCurrentUser();
+  const getUser = await getCurrentUser();
+  const user = JSON.parse(JSON.stringify(getUser));
 
   return (
     <div className="root-layout">
@@ -19,8 +20,8 @@ const layout = async ({ children }: { children: ReactNode }) => {
           <img src="/logo.svg" alt="logo" width={38} height={32} />
           <h2 className="text-primary-100">PrepWise</h2>
         </Link>
-        <div className="flex flex-row gap-2">
-          <h3 className="capitalize">Welcome {getUserName.name} :)</h3>
+        <div className="flex flex-row gap-2 items-center">
+          <h3 className="capitalize">Welcome, {user.name} 👾 </h3>
           <LogoutButton />
         </div>
       </nav>

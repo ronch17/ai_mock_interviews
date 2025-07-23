@@ -96,10 +96,12 @@ export async function getCurrentUser(): Promise<User | null> {
 
     if (!userRecord.exists) return null;
 
-    return {
-      ...userRecord.data(),
-      id: userRecord.id,
-    } as User;
+    return JSON.parse(
+      JSON.stringify({
+        ...userRecord.data(),
+        id: userRecord.id,
+      }),
+    ) as User;
   } catch (error) {
     console.log("Error fetching user", error);
 
