@@ -20,8 +20,10 @@ const layout = async ({ children }: { children: ReactNode }) => {
           <img src="/logo.svg" alt="logo" width={38} height={32} />
           <h2 className="text-primary-100">PrepWise</h2>
         </Link>
-        <div className="flex flex-row gap-2 items-center">
-          <h3 className="capitalize">Welcome, {user.name} 👾 </h3>
+        <div className="flex flex-col sm:flex-row gap-2 items-center">
+          <h3 className="capitalize text-sm md:text-lg">
+            Welcome, {user.name} 🤖
+          </h3>
           <LogoutButton />
         </div>
       </nav>
