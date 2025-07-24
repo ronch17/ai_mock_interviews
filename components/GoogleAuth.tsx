@@ -9,7 +9,7 @@ export default function GoogleAuth() {
       className="bg-white border px-4 py-2 rounded shadow"
     >
       <Image src="/google.svg" alt="google" height={30} width={30} />
-      Sign in with Google
+      Continue with Google
     </Button>
   );
 }
