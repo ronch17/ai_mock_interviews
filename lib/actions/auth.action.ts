@@ -3,6 +3,8 @@
 import { db, auth } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
 
@@ -80,33 +82,56 @@ export async function setSessionCookie(idToken: string) {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies();
-
+  const cookieStore = cookies();
   const sessionCookie = cookieStore.get("session")?.value;
 
-  if (!sessionCookie) return null;
+  // 🔹 1. ננסה דרך Firebase
+  if (sessionCookie) {
+    try {
+      const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 
-  try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+      const userRecord = await db
+        .collection("users")
+        .doc(decodedClaims.uid)
+        .get();
 
-    const userRecord = await db
-      .collection("users")
-      .doc(decodedClaims.uid)
-      .get();
+      if (!userRecord.exists) return null;
 
-    if (!userRecord.exists) return null;
-
-    return JSON.parse(
-      JSON.stringify({
-        ...userRecord.data(),
+      return {
+        ...(userRecord.data() as User),
         id: userRecord.id,
-      }),
-    ) as User;
-  } catch (error) {
-    console.log("Error fetching user", error);
-
-    return null;
+      };
+    } catch (error) {
+      console.log("Error verifying Firebase session", error);
+    }
   }
+
+  // 🔹 2. ננסה דרך NextAuth (Google)
+  const session = await getServerSession(authOptions);
+
+  if (session?.user?.email) {
+    try {
+      // ננסה למצוא את המשתמש ב־Firestore לפי אימייל
+      const userQuery = await db
+        .collection("users")
+        .where("email", "==", session.user.email)
+        .limit(1)
+        .get();
+
+      if (userQuery.empty) return null;
+
+      const userDoc = userQuery.docs[0];
+
+      return {
+        ...(userDoc.data() as User),
+        id: userDoc.id,
+      };
+    } catch (error) {
+      console.log("Error fetching user from NextAuth session", error);
+    }
+  }
+
+  return null;
 }
 
 export async function isAuthenticated() {
@@ -115,7 +140,7 @@ export async function isAuthenticated() {
   return !!user;
 }
 
-export async function logUserOut() {
+export async function logUserOut(): Promise<NextResponse<{ message: string }>> {
   const cookieStore = await cookies();
 
   cookieStore.set("session", "", {
@@ -126,5 +151,14 @@ export async function logUserOut() {
     maxAge: 0,
   });
 
-  return NextResponse.json({ message: "Logged out successfully" });
+  const hasNextAuthSession =
+    cookieStore.get("next-auth.session-token") ||
+    cookieStore.get("__Secure-next-auth.session-token");
+
+  return NextResponse.json({
+    message: "Logged out successfully",
+    ...(hasNextAuthSession && {
+      nextAuthLogout: "/api/auth/signout?callbackUrl=/sign-in",
+    }),
+  });
 }

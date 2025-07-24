@@ -18,6 +18,7 @@ export async function getInterviewByUserId(
     ...doc.data(),
   })) as Interview[];
 }
+
 export async function getLatestInterviews(
   params: GetLatestInterviewsParams,
 ): Promise<Interview[] | null> {
@@ -27,8 +28,8 @@ export async function getLatestInterviews(
     .collection("interviews")
     .where("finalized", "==", true)
     .where("userId", "!=", userId)
-    .orderBy("userId") // נדרש בגלל השימוש ב־"!="
-    .orderBy("createdAt", "desc") // בשביל הסדר מהחדש לישן
+    .orderBy("userId")
+    .orderBy("createdAt", "desc")
     .limit(limit)
     .get();
 
