@@ -82,7 +82,7 @@ export async function setSessionCookie(idToken: string) {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("session")?.value;
 
   // 🔹 1. ננסה דרך Firebase
@@ -140,7 +140,7 @@ export async function isAuthenticated() {
   return !!user;
 }
 
-export async function logUserOut(): Promise<NextResponse<{ message: string }>> {
+export async function logUserOut() {
   const cookieStore = await cookies();
 
   cookieStore.set("session", "", {
@@ -155,10 +155,7 @@ export async function logUserOut(): Promise<NextResponse<{ message: string }>> {
     cookieStore.get("next-auth.session-token") ||
     cookieStore.get("__Secure-next-auth.session-token");
 
-  return NextResponse.json({
-    message: "Logged out successfully",
-    ...(hasNextAuthSession && {
-      nextAuthLogout: "/api/auth/signout?callbackUrl=/sign-in",
-    }),
-  });
+  return {
+    nextAuthLogout: !!hasNextAuthSession,
+  };
 }

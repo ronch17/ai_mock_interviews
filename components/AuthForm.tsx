@@ -132,6 +132,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               label="Password"
               placeholder="Password"
               type="password"
+              autoComplete="current-password"
             />
 
             <Button className="btn" type="submit">

@@ -1,29 +1,20 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { logUserOut } from "@/lib/actions/auth.action";
 
 export function LogoutButton() {
   const router = useRouter();
 
   const logoutUser = async () => {
-    try {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-      });
+    const res = await logUserOut();
 
-      const data = await res.json();
-
-      if (data.nextAuthLogout) {
-        // התחברות דרך גוגל => נעשה signOut דרך NextAuth
-        signOut({ callbackUrl: "/sign-in" });
-      } else {
-        // התחברות רגילה => רק לנווט חזרה
-        router.push("/sign-in");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
+    if (res.nextAuthLogout) {
+      signOut({ callbackUrl: "/sign-in" }); // ניתוק דרך NextAuth
+    } else {
+      router.push("/sign-in"); // ניתוק רגיל
     }
   };
 
