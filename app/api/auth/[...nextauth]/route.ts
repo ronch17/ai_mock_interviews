@@ -18,6 +18,7 @@ export const authOptions = {
         await userDoc.set({
           name: user.name,
           email: user.email,
+          image: user.image,
         });
       }
 

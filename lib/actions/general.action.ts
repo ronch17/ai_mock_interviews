@@ -4,6 +4,7 @@ import { db } from "@/firebase/admin";
 import { generateObject } from "ai";
 import { feedbackSchema } from "@/public/constants";
 import { google } from "@ai-sdk/google";
+import { getCurrentUser } from "@/lib/actions/auth.action";
 
 export async function getInterviewByUserId(
   userId: string,
@@ -124,4 +125,9 @@ export async function getFeedbackByInterviewId(
 
   const feedbackDoc = querySnapshot.docs[0];
   return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
+}
+
+export async function googleAvatar() {
+  const user = await getCurrentUser();
+  return user?.image || null;
 }

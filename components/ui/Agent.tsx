@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/public/constants";
 import { createFeedback } from "@/lib/actions/general.action";
+import ChatAvatar from "@/components/ui/googleAvatar";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -21,6 +22,7 @@ interface SavedMessage {
 }
 
 const Agent = ({
+  avatar,
   userName,
   userId,
   type,
@@ -165,11 +167,11 @@ const Agent = ({
         <div className="card-border">
           <div className="card-content">
             <Image
-              src="/user-avatar.png"
-              alt="user avatar"
-              width={540}
-              height={540}
-              className="rounded-full object-cover size-[120px]"
+              src={avatar || "/avatar.png"}
+              alt="User Avatar"
+              width={100}
+              height={65}
+              className="object-cover rounded-full"
             />
             <h3>{userName}</h3>
           </div>
